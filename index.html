@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Квесты дня</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#6c4cf1">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+:root{--bg:#f6f4ff;--card:#fff;--ink:#241f3d;--mute:#6f6a8f;--line:#e4e0f5;--accent:#6c4cf1;--accent2:#ff9f1c;--ok:#22a06b;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15121f;--card:#201b30;--ink:#f0edff;--mute:#a49fc4;--line:#322b4a;--accent:#8f78ff;--accent2:#ffb347;--ok:#3ccf91;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15121f;--card:#201b30;--ink:#f0edff;--mute:#a49fc4;--line:#322b4a;--accent:#8f78ff;--accent2:#ffb347;--ok:#3ccf91;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:560px;margin:0 auto;padding:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+h2{font-size:15px;margin:0 0 10px}
+.sub{color:var(--mute);font-size:13px}
+.hero{display:flex;gap:12px;align-items:center}
+.av{font-size:34px;width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;flex:none}
+.hd{flex:1;min-width:0}
+.ttl{font-weight:700;font-size:18px}
+.bar{height:10px;border-radius:6px;background:var(--line);overflow:hidden;margin:6px 0 4px}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .4s}
+.row{display:flex;justify-content:space-between;gap:8px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.st{border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.st b{font-size:14px}
+.nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.nav button{background:var(--line);color:var(--ink);border:0;border-radius:10px;width:40px;height:40px;font-size:18px}
+.task{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.task.done .tt>div:first-child{text-decoration:line-through;color:var(--mute)}
+.tt{flex:1;min-width:0;word-break:break-word}
+.chk{width:32px;height:32px;border-radius:50%;border:2px solid var(--accent);background:transparent;color:#fff;font-size:18px;flex:none;padding:0}
+.done .chk{background:var(--ok);border-color:var(--ok)}
+.chk:disabled{opacity:.4}
+.xp{font-weight:700;color:var(--accent2);font-size:14px}
+.x{background:none;border:0;color:var(--mute);font-size:16px;padding:6px}
+.empty{color:var(--mute);text-align:center;padding:14px 0 4px}
+input,select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px}
+.add{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.add input{grid-column:1/3}
+.btn{grid-column:1/3;background:var(--accent);color:#fff;border:0;border-radius:12px;padding:12px;font:inherit;font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);border-radius:20px;padding:6px 10px;font-size:13px}
+.chip.off{opacity:.4;filter:grayscale(1)}
+.reset{background:none;border:0;color:var(--mute);font:inherit;font-size:13px;display:block;margin:6px auto 0;padding:8px}
+#toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);opacity:0;pointer-events:none;background:var(--ink);color:var(--bg);border-radius:14px;padding:10px 16px;text-align:center;transition:.3s;z-index:9;max-width:86%}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+#toast.big{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:18px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card" id="top"></div>
+  <div class="card"><h2>Атрибуты</h2><div class="stats" id="stats"></div></div>
+  <div class="card" id="day"></div>
+  <div class="card">
+    <h2>Новый квест</h2>
+    <div class="add">
+      <input id="nt" maxlength="80" placeholder="Что нужно сделать?">
+      <select id="ns"></select>
+      <select id="nf"></select>
+      <button class="btn" onclick="add()">Добавить квест</button>
+    </div>
+  </div>
+  <div class="card"><h2>Достижения</h2><div class="chips" id="ach"></div></div>
+  <button class="reset" id="rs" onclick="reset()">Сбросить прогресс</button>
+</div>
+<div id="toast"></div>
+<script>
+const STATS={int:{n:'Интеллект',i:'🧠'},str:{n:'Сила',i:'💪'},will:{n:'Воля',i:'🔥'},cre:{n:'Творчество',i:'🎨'}};
+const DIFF={e:{n:'Лёгкий',xp:10},m:{n:'Средний',xp:25},h:{n:'Эпичный',xp:50}};
+const ACH=[
+ {id:'a1',i:'🥇',n:'Первый шаг',ok:c=>c.cnt>=1},
+ {id:'a2',i:'✋',n:'Пять квестов',ok:c=>c.cnt>=5},
+ {id:'a3',i:'🛠️',n:'20 квестов',ok:c=>c.cnt>=20},
+ {id:'a4',i:'🔥',n:'3 дня подряд',ok:c=>c.streak>=3},
+ {id:'a5',i:'🐉',n:'Эпичная победа',ok:c=>c.hard>=1},
+ {id:'a6',i:'⭐',n:'Уровень 5',ok:c=>c.L.l>=5}
+];
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const fmt=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parse=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)};
+const shift=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return fmt(d)};
+const today=()=>fmt(new Date());
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const need=l=>100+(l-1)*50;
+function lv(t){let l=1,x=t;while(x>=need(l)){x-=need(l);l++}return{l,x,n:need(l)}}
+
+let S={tasks:[],seeded:false},day=today();
+try{const r=localStorage.getItem('quests-v1');if(r)S=JSON.parse(r)}catch(e){}
+function save(){try{localStorage.setItem('quests-v1',JSON.stringify(S))}catch(e){}}
+if(!S.seeded){
+  const mk=(t,s,f)=>({id:Math.random().toString(36).slice(2,9),t,d:day,s,f,done:false});
+  S.tasks=[mk('Выпить стакан воды','will','e'),mk('Зарядка 10 минут','str','m'),mk('Прочитать 10 страниц','int','m')];
+  S.seeded=true;save();
+}
+
+function snap(){
+  const done=S.tasks.filter(t=>t.done);
+  const total=done.reduce((a,t)=>a+DIFF[t.f].xp,0);
+  const L=lv(total);
+  const days=new Set(done.map(t=>t.dd||t.d));
+  let d=today();if(!days.has(d))d=shift(d,-1);
+  let streak=0;while(days.has(d)){streak++;d=shift(d,-1)}
+  const sx={};for(const k in STATS)sx[k]=done.filter(t=>t.s===k).reduce((a,t)=>a+DIFF[t.f].xp,0);
+  const c={cnt:done.length,streak,hard:done.filter(t=>t.f==='h').length,L};
+  return{total,L,streak,sx,c,ach:ACH.filter(a=>a.ok(c)).map(a=>a.id)};
+}
+
+function render(){
+  const z=snap(),L=z.L;
+  const title=L.l>=12?'Легенда':L.l>=8?'Мастер':L.l>=5?'Адепт':L.l>=3?'Ученик':'Новичок';
+  const av=L.l>=12?'👑':L.l>=8?'🧙':L.l>=5?'⚔️':L.l>=3?'🗡️':'🌱';
+  $('top').innerHTML=`<div class="hero"><div class="av">${av}</div><div class="hd"><div class="ttl">${title} · ур. ${L.l}</div><div class="bar"><i style="width:${L.x/L.n*100}%"></i></div><div class="row sub"><span>${L.x} / ${L.n} XP</span><span>🔥 серия: ${z.streak} дн.</span></div></div></div>`;
+  $('stats').innerHTML=Object.keys(STATS).map(k=>{const x=z.sx[k];return `<div class="st"><div class="row"><b>${STATS[k].i} ${STATS[k].n}</b><span class="sub">ур. ${Math.floor(x/50)+1}</span></div><div class="bar"><i style="width:${x%50*2}%"></i></div></div>`}).join('');
+  const list=S.tasks.filter(t=>t.d===day);
+  const dn=list.filter(t=>t.done).length;
+  const lbl=day===today()?'Сегодня':parse(day).toLocaleDateString('ru-RU',{weekday:'short',day:'numeric',month:'long'});
+  $('day').innerHTML=`<div class="nav"><button onclick="go(-1)" aria-label="Назад">‹</button><div style="text-align:center"><b>${lbl}</b><div class="sub">${dn} из ${list.length} выполнено</div></div><button onclick="go(1)" aria-label="Вперёд">›</button></div>`+
+   (list.length?list.map(t=>`<div class="task ${t.done?'done':''}"><button class="chk" onclick="tog('${t.id}')" aria-label="Выполнить">${t.done?'✓':''}</button><div class="tt"><div>${esc(t.t)}</div><div class="sub">${STATS[t.s].i} ${STATS[t.s].n} · ${DIFF[t.f].n}</div></div><span class="xp">+${DIFF[t.f].xp}</span>${t.done?'':`<button class="x" onclick="del('${t.id}')" aria-label="Удалить">✕</button>`}</div>`).join(''):'<div class="empty">Квестов на этот день пока нет</div>');
+  $('ach').innerHTML=ACH.map(a=>`<span class="chip ${z.ach.includes(a.id)?'':'off'}">${a.i} ${a.n}</span>`).join('');
+}
+
+let tt=0;
+function toast(msgs,big){
+  const el=$('toast');el.innerHTML=msgs.map(m=>`<div>${m}</div>`).join('');
+  el.className='on'+(big?' big':'');clearTimeout(tt);
+  tt=setTimeout(()=>{el.className=''},big?3200:2200);
+}
+function go(n){day=shift(day,n);render()}
+function add(){
+  const el=$('nt'),t=el.value.trim();if(!t)return;
+  S.tasks.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),t,d:day,s:$('ns').value,f:$('nf').value,done:false});
+  el.value='';save();render();
+}
+function tog(id){
+  const t=S.tasks.find(x=>x.id===id);if(!t)return;
+  const b=snap();t.done=!t.done;t.dd=t.done?today():null;save();const a=snap();render();
+  const m=[];let big=false;
+  if(t.done){
+    m.push('+'+DIFF[t.f].xp+' XP · '+STATS[t.s].i+' '+STATS[t.s].n);
+    if(a.L.l>b.L.l){m.unshift('🎉 Новый уровень: '+a.L.l+'!');big=true}
+    if(Math.floor(a.sx[t.s]/50)>Math.floor(b.sx[t.s]/50))m.push(STATS[t.s].n+' прокачан до ур. '+(Math.floor(a.sx[t.s]/50)+1));
+    ACH.filter(x=>a.ach.includes(x.id)&&!b.ach.includes(x.id)).forEach(x=>m.push('🏆 '+x.n));
+  }else m.push('Награда снята: −'+DIFF[t.f].xp+' XP');
+  toast(m,big);
+}
+function del(id){S.tasks=S.tasks.filter(x=>x.id!==id||x.done);save();render()}
+let rt=0;
+function reset(){
+  const b=$('rs');
+  if(!rt){b.textContent='Нажмите ещё раз, чтобы сбросить всё';rt=setTimeout(()=>{rt=0;b.textContent='Сбросить прогресс'},3000);return}
+  clearTimeout(rt);rt=0;b.textContent='Сбросить прогресс';S={tasks:[],seeded:true};day=today();save();render();
+}
+$('ns').innerHTML=Object.keys(STATS).map(k=>`<option value="${k}">${STATS[k].i} ${STATS[k].n}</option>`).join('');
+$('nf').innerHTML=Object.keys(DIFF).map(k=>`<option value="${k}">${DIFF[k].n} (+${DIFF[k].xp} XP)</option>`).join('');
+$('nt').addEventListener('keydown',e=>{if(e.key==='Enter')add()});
+render();
+if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+</script>
+</body>
+</html>
